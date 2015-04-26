@@ -1,0 +1,12 @@
+<table>
+	<tbody>
+{{range . }}
+	<tr>
+		<td>{{ .Name }}</td>
+		<td>{{ .Slug }}</td>
+		<td>{{ .Description }}</td>
+		<td>{{ .Price }}</td>
+		<td>{{ .Count }}</td>
+{{ end }}
+	</tbody>
+</table>
