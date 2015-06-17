@@ -1,3 +1,4 @@
+{{ define "master" }}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -5,10 +6,10 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-		<title>{{if .Title}} {{.Title}} {{else}} {{.Global.Title}} {{end}}</title>
+		<title>{{if .Title}} {{.Title}} {{else}} Laborshop {{end}}</title>
 
     <!-- Bootstrap -->
-    <link href="static/bootstrap.css" rel="stylesheet">
+		<link href="{{ .Global.Config.Location }}/static/bootstrap.css" rel="stylesheet">
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -18,41 +19,67 @@
     <![endif]-->
   </head>
   <body>
-		<div class="container">
-			<header role="banner">
-				<div class="row labor-toolbar">
-					<div class="col-md-3">
-						<p class="welcome-msg">Hello!</p>
-					</div>
-					<div class="col-md-9 labor-quick-access">
-						<a href="dd">link1</a>
-						<a href="dd">link1</a>
-						<a href="dd">link1</a>
-						<a href="dd">lang</a>
-					</div>
-				</div>
-
+    <div class="lab-header">
+			<div class="container">
 				<div class="row">
-					<div class="col-md-3">
-						<h1 class="labor-logo">
-							<div style="font-size: 28pt; padding-left: 65pt;">das labor</div>
-							<div style="font-size: 80pt; margin-top: -20pt;">shop</div>
-						</h1>
+					<div class="col-md-4">
+						<a href="{{ .Global.Config.Location }}">
+							<img src="{{ .Global.Config.Location }}/static/logo.png">
+						</a>
+						<h1>das la<span class="lab-bo-hilight">bo</span>r</h1>
 					</div>
-
-					<div class="col-md-9">
-						<?php echo $this->getChildHtml('topContainer'); ?>
-						<?php echo $this->getChildHtml('topMenu') ?>
+					<div class="col-md-8">
+						<nav class="navbar navbar-inverse">
+							<div class="navbar-header">
+								<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+									<span class="sr-only">Toggle navigation</span>
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+									<span class="icon-bar"></span>
+								</button>
+							</div>
+							<div id="navbar" class="collapse navbar-collapse">
+								<ul class="nav navbar-nav">
+									<li><a href="{{ .Global.Config.Location }}/category/all">Artikel</a></li>
+									<li><a href="{{ .Global.Config.Location }}/pages/kits">Info</a></li>
+								</ul>
+								<ul class="nav navbar-nav navbar-right">
+									<li class="dropdown" id="menu1">
+										<a class="dropdown-toggle" data-toggle="dropdown" href="#menu1">Login<b class="caret"></b></a>
+										<div class="dropdown-menu">
+											<form accept-charset="UTF-8" action="/members/login" method="post">
+												<div class="form-group">
+													<div class="col-sm-12">
+														<input type="text" name="name" id="name" value="" placeholder="Username" class="form-control">
+													</div>
+												</div>
+												<div class="form-group">
+													<div class="col-sm-12">
+														<input type="password" name="passwd" id="passwd" value="" placeholder="Passsword" class="form-control">
+													</div>
+												</div>
+												<div class="form-group">
+													<div class="col-sm-12">
+														<input class="btn btn-block btn-primary" name="commit" type="submit" value="Log In" />
+													</div>
+												</div>
+											</form>
+										</div>
+									</li>
+								</ul>
+							</div><!--/.nav-collapse -->
+						</nav>
 					</div>
 				</div>
-			</header>
-		</div>
- 		Member: <a href="/members/{{ .Global.Member.Id }}">{{ .Global.Member.Name }}</a><br/>
-		{{if .Body}} {{.Body}} {{end}}
+			</div>
+		</div><!-- /.lab-header -->
+
+		{{ .Body }}
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="static/js/bootstrap.min.js"></script>
+    <script src="{{ .Global.Config.Location }}/static/js/bootstrap.min.js"></script>
   </body>
 </html>
+{{ end }}

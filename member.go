@@ -5,7 +5,10 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"golang.org/x/crypto/pbkdf2"
+	"net/http"
+	"regexp"
 )
 
 type Member struct {
@@ -34,7 +37,7 @@ func MemberFromRow(rows *sql.Rows) Member {
 }
 
 func NewMember(name string, email string, passwd string, group string, database *sql.DB) (Member, error) {
-	hashed := pbkdf2.Key([]byte(passwd), passwdSalt, 8192, 32, sha256.New)
+	hashed := pbkdf2.Key([]byte(passwd), []byte(GlobalConfig.Salt), 8192, 32, sha256.New)
 
 	mem := Member{
 		Id:     0,
@@ -77,4 +80,148 @@ func FetchMember(id int64, database *sql.DB) (Member, error) {
 	rows.Close()
 
 	return mem, nil
+}
+
+func HandleMember(w http.ResponseWriter, r *http.Request) {
+	sess := FetchOrCreateSession(w, r, Database)
+	mem, err := FetchMember(sess.Member, Database)
+
+	if err != nil {
+		http.Error(w, "Failed to fetch member: "+err.Error(), 500)
+		DatabaseMutex.Unlock()
+		return
+	}
+
+	if r.Method == "POST" {
+		err := r.ParseForm()
+
+		if err != nil {
+			http.Error(w, "Failed create member: "+err.Error(), 500)
+		}
+
+		var ok bool
+		var names, emails, passwds []string
+
+		names, ok = r.PostForm["name"]
+		if !ok || len(names) != 1 {
+			http.Error(w, "Failed create member: missing name", 400)
+			return
+		}
+
+		name := names[0]
+		if name == "" {
+			http.Error(w, "Failed create member: empty name", 400)
+			return
+		}
+
+		DatabaseMutex.Lock()
+		defer DatabaseMutex.Unlock()
+
+		var rows *sql.Rows
+		rows, err = Database.Query("SELECT * FROM members WHERE name = ?", name)
+
+		if err != nil {
+			http.Error(w, "Failed create member: "+err.Error(), 500)
+			return
+		}
+
+		exists := rows.Next()
+		rows.Close()
+
+		if exists {
+			http.Error(w, "Failed create member: exists already", 400)
+			return
+		}
+
+		emails, ok = r.PostForm["email"]
+		if !ok || len(emails) != 1 {
+			http.Error(w, "Failed create member: missing email", 400)
+			return
+		}
+
+		email := emails[0]
+		var matched bool
+		matched, err = regexp.MatchString(".+@.+", email)
+		if !matched || err != nil {
+			http.Error(w, "Failed create member: invalid email", 400)
+			return
+		}
+
+		passwds, ok = r.PostForm["passwd"]
+		if !ok || len(passwds) != 1 {
+			http.Error(w, "Failed create member: missing passwd", 400)
+			return
+		}
+
+		passwd := passwds[0]
+		if len(passwd) < 8 {
+			http.Error(w, "Failed create member: password shorter than 8 characters", 400)
+			return
+		}
+
+		mem2, err := NewMember(name, email, passwd, "customer", Database)
+
+		if err != nil {
+			http.Error(w, "Failed create member: "+err.Error(), 500)
+			return
+		}
+
+		sess := FetchOrCreateSession(w, r, Database)
+		err = LoginSession(sess.Id, mem2.Id, Database)
+		if err != nil {
+			http.Error(w, "Failed to associate sessions to member: "+err.Error(), 500)
+			return
+		}
+
+		RenderTemplate(w, "templates/members/success.html", "", mem2, "")
+	} else if r.Method == "GET" {
+		memId := r.URL.Path[9:]
+
+		DatabaseMutex.Lock()
+		defer DatabaseMutex.Unlock()
+
+		if memId == "" {
+
+			if mem.Group == "admin" {
+
+				rows, err := Database.Query("SELECT * FROM members")
+
+				if err != nil {
+					http.Error(w, "Failed to read members from database: "+err.Error(), 500)
+				} else {
+					defer rows.Close()
+
+					mems := make([]Member, 0)
+
+					for rows.Next() {
+						mems = append(mems, MemberFromRow(rows))
+					}
+
+					RenderTemplate(w, "templates/members/list.html", "All members", mem, mems)
+				}
+			} else {
+				http.Error(w, "Unsufficient permissions", 403)
+			}
+		} else {
+			if memId != fmt.Sprintf("%d", mem.Id) && mem.Group != "admin" {
+				http.Error(w, "Unsufficient permissions", 403)
+				return
+			}
+
+			rows, err := Database.Query("SELECT * FROM members WHERE id = ?", memId)
+
+			if err != nil {
+				http.Error(w, "Failed to read member from database: "+err.Error(), 500)
+			} else {
+				defer rows.Close()
+
+				if !rows.Next() {
+					http.Error(w, "No such member", 404)
+				} else {
+					mem2 := MemberFromRow(rows)
+					RenderTemplate(w, "templates/members/single.html", mem.Name, mem, mem2)
+				}
+			}
+		}
+	}
 }

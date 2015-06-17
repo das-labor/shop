@@ -33,6 +33,11 @@ func ProductFromRow(rows *sql.Rows) Product {
 	return Product{id, name, slug, desc, price, count}
 }
 
+func GetProducts() (string, error) {
+	fmt.Printf("Hello!########################\n")
+	return "Hello, World", nil
+}
+
 func RenderTemplate(w http.ResponseWriter, tmplPath string, title string, member Member, local interface{}) {
 	master, err := template.ParseFiles("templates/master.html")
 	global := struct {
@@ -42,11 +47,14 @@ func RenderTemplate(w http.ResponseWriter, tmplPath string, title string, member
 		Title:  "Test Shop",
 		Member: member,
 	}
+	/*funcs := template.FuncMap{
+		"products": GetProducts,
+	}*/
 
 	if err != nil {
 		http.Error(w, "Master template not found: "+err.Error(), 404)
 	} else {
-		page, err := template.ParseFiles(tmplPath)
+		page, err := /*template.New(tmplPath). .Funcs(funcs)*/ template.ParseFiles(tmplPath)
 
 		if err != nil {
 			http.Error(w, "Template '"+tmplPath+"' not found or invalid: "+err.Error(), 500)
@@ -314,29 +322,45 @@ func notImplHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Not Implemented yet :(")
 }
 
+func staticFileHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, r.URL.Path[1:])
+}
+
 var database *sql.DB
 var databaseMutex sync.Mutex
 var passwdSalt []byte
 var siteTitle string
 
+func CartFromRow(rows *sql.Rows) string {
+	return "ss"
+}
+
 func main() {
 	http.HandleFunc("/", rootHandler)
 	http.HandleFunc("/pages/", pagesHandler)
 
-	http.HandleFunc("/products/", productHandler)
+	http.Handle("/products/", CrudHandler{PrettyName: "Product", Table: "products", Subdir: "product"})
 	http.HandleFunc("/categories/", notImplHandler)
 
 	http.HandleFunc("/orders/", notImplHandler)
 	http.HandleFunc("/orders/new", notImplHandler)
 	http.HandleFunc("/orders/my", notImplHandler)
 
-	http.HandleFunc("/carts/", notImplHandler)
+	cartHandler := CrudHandler{
+		PrettyName: "Cart",
+		Table:      "carts",
+		Subdir:     "cart",
+	}
+
+	http.Handle("/carts/", cartHandler)
 	http.HandleFunc("/carts/my", notImplHandler)
 
 	http.HandleFunc("/members/", memberHandler)
 	http.HandleFunc("/members/login", notImplHandler)
 
 	http.HandleFunc("/sessions/", notImplHandler)
+
+	http.HandleFunc("/static/", staticFileHandler)
 
 	passwdSalt = []byte("seems legit...")
 	siteTitle = "Test Shop"

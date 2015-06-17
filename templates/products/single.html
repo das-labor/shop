@@ -1,4 +1,6 @@
+{{ define "single_product" }}
 <h1>{{ .Prod.Name }}</h1>
 <h2>{{ .Prod.Slug }}</h2>
 <p>{{ .Prod.Description }}</p>
 {{ .Price }} EUR ({{ .Prod.Count }} Available)
+{{ end }}

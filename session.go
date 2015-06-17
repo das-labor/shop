@@ -6,7 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	_ "github.com/mattn/go-sqlite3"
+	"log"
 	"net/http"
 	"time"
 )
@@ -104,7 +104,7 @@ func FetchOrCreateSession(w http.ResponseWriter, r *http.Request, database *sql.
 
 	if err != nil {
 		if err != http.ErrNoCookie {
-			// XXX: log
+			log.Panicln(err)
 		}
 
 		sess, err = NewSession(database)
@@ -115,12 +115,11 @@ func FetchOrCreateSession(w http.ResponseWriter, r *http.Request, database *sql.
 	} else if err == nil {
 		sess, err = RefreshSession(c.Value, database)
 
-		// XXX: Log this
 		if err != nil {
 			sess, err = NewSession(database)
 
 			if err != nil {
-				panic(err.Error())
+				log.Panicln(err.Error())
 			}
 		}
 	}
