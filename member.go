@@ -173,7 +173,7 @@ func HandleMember(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		RenderTemplate(w, "templates/members/success.html", "", mem2, "")
+		RenderTemplate(w, "members/success", "", mem2, "")
 	} else if r.Method == "GET" {
 		memId := r.URL.Path[9:]
 
@@ -197,7 +197,7 @@ func HandleMember(w http.ResponseWriter, r *http.Request) {
 						mems = append(mems, MemberFromRow(rows))
 					}
 
-					RenderTemplate(w, "templates/members/list.html", "All members", mem, mems)
+					RenderTemplate(w, "members/list", "All members", mem, mems)
 				}
 			} else {
 				http.Error(w, "Unsufficient permissions", 403)
@@ -219,9 +219,85 @@ func HandleMember(w http.ResponseWriter, r *http.Request) {
 					http.Error(w, "No such member", 404)
 				} else {
 					mem2 := MemberFromRow(rows)
-					RenderTemplate(w, "templates/members/single.html", mem.Name, mem, mem2)
+					RenderTemplate(w, "members/single", mem.Name, mem, mem2)
 				}
 			}
 		}
+	}
+}
+
+func HandleLogin(w http.ResponseWriter, r *http.Request) {
+	sess := FetchOrCreateSession(w, r, Database)
+	mem, err := FetchMember(sess.Member, Database)
+
+	if err != nil {
+		http.Error(w, "Failed to fetch member: "+err.Error(), 500)
+		DatabaseMutex.Unlock()
+		return
+	}
+
+	if r.Method == "POST" {
+		err := r.ParseForm()
+
+		if err != nil {
+			http.Error(w, "Failed parse <form>: "+err.Error(), 500)
+		}
+
+		var ok bool
+		var names, passwds []string
+
+		names, ok = r.PostForm["name"]
+		if !ok || len(names) != 1 {
+			RenderTemplate(w, "pages/login", "", mem, "Invalid username or password.1")
+			return
+		}
+
+		name := names[0]
+
+		passwds, ok = r.PostForm["passwd"]
+		if !ok || len(passwds) != 1 {
+			RenderTemplate(w, "pages/login", "", mem, "Invalid username or password.2")
+			return
+		}
+
+		passwd := passwds[0]
+		hashed := pbkdf2.Key([]byte(passwd), []byte(GlobalConfig.Salt), 8192, 32, sha256.New)
+
+		DatabaseMutex.Lock()
+		defer DatabaseMutex.Unlock()
+
+		var rows *sql.Rows
+		rows, err = Database.Query("SELECT id FROM members WHERE name = ? AND passwd = ?", name, hex.EncodeToString(hashed))
+
+		if err != nil {
+			RenderTemplate(w, "pages/login", "", mem, "Invalid username or password.3")
+			return
+		}
+
+		exists := rows.Next()
+
+		if !exists {
+			RenderTemplate(w, "pages/login", "", mem, "Invalid username or password.4")
+			return
+		}
+
+		var memid int64
+		err = rows.Scan(&memid)
+		rows.Close()
+
+		if err != nil {
+			RenderTemplate(w, "pages/login", "", mem, "Invalid username or password.5")
+			return
+		}
+
+		err = LoginSession(sess.Id, memid, Database)
+		if err != nil {
+			RenderTemplate(w, "pages/login", "", mem, "Invalid username or password.6")
+			return
+		}
+
+		RenderTemplate(w, "members/success", "", mem, "")
+	} else {
+		RenderTemplate(w, "pages/login", "", mem, "Invalid username or password. (GET)")
 	}
 }

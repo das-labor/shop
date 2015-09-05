@@ -93,7 +93,7 @@ func NewCookie(name string, value string, exp time.Time) http.Cookie {
 		Name:    name,
 		Value:   value,
 		Path:    "/",
-		Domain:  "localhost",
+		Domain:  "127.0.0.1", // XXX: read from config
 		Expires: exp,
 	}
 }
