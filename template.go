@@ -60,7 +60,7 @@ func RenderTemplate(w http.ResponseWriter, tmpl string, title string, member Mem
 
 func InitializeTemplates() error {
 	funcs := template.FuncMap{
-		"products": GetProducts,
+	//"products": GetProducts,
 	}
 
 	TemplateCache = template.New("all").Funcs(funcs)

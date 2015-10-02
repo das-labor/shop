@@ -44,20 +44,13 @@ func InitializeRoutes() error {
 	http.HandleFunc("/", rootHandler)
 	http.HandleFunc("/pages/", pagesHandler)
 
-	//http.Handle("/products/", CrudHandler{PrettyName: "Product", Table: "products", Subdir: "product"})
 	http.HandleFunc("/categories/", notImplHandler)
+	http.HandleFunc("/products/", HandleProduct)
 
 	http.HandleFunc("/orders/", notImplHandler)
 	http.HandleFunc("/orders/new", notImplHandler)
 	http.HandleFunc("/orders/my", notImplHandler)
 
-	/*cartHandler := CrudHandler{
-		PrettyName: "Cart",
-		Table:      "carts",
-		Subdir:     "cart",
-	}
-
-	http.Handle("/carts/", cartHandler)*/
 	http.HandleFunc("/carts/my", notImplHandler)
 
 	http.HandleFunc("/members/", HandleMember)
