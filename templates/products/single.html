@@ -1,6 +1,69 @@
 {{ define "products/single" }}
-<h1>{{ .Name }}</h1>
-<h2>{{ .Slug }}</h2>
-<p>{{ .Description }}</p>
-{{ .Price }} EUR ({{ .Count }} Available)
+<div class="container">
+	<div class="row">
+		<h1>{{ .Name }}</h1>
+		<h2>{{ .Slug }}</h2>
+		<p>{{ .Description }}</p>
+		{{ .Price }} EUR ({{ .Count }} Available)
+	</div>
+	<div class="row">
+		<form class="form-horizontal" action="/products/{{ .Id }}" method="POST">
+		<fieldset>
+			<!-- Form Name -->
+			<legend>New Product</legend>
+
+			<!-- Text input-->
+			<div class="form-group">
+				<label class="col-md-4 control-label" for="name">Name</label>
+				<div class="col-md-4">
+					<input id="name" name="name" placeholder="Name" class="form-control input-md" required="" type="text" value="{{ .Name }}">
+				<span class="help-block">Name of the new product</span>
+				</div>
+			</div>
+
+			<!-- Text input-->
+			<div class="form-group">
+				<label class="col-md-4 control-label" for="slug">Slug</label>
+				<div class="col-md-4">
+					<input id="slug" name="slug" placeholder="Slug" class="form-control input-md" required="" type="text" value="{{ .Slug }}">
+				<span class="help-block">Short description</span>
+				</div>
+			</div>
+
+			<!-- Textarea -->
+			<div class="form-group">
+				<label class="col-md-4 control-label" for="desc">Description</label>
+				<div class="col-md-4">
+					<textarea class="form-control" id="desc" name="desc">{{ .Description }}</textarea>
+				</div>
+			</div>
+
+			<!-- Text input-->
+			<div class="form-group">
+				<label class="col-md-4 control-label" for="price">Price</label>
+				<div class="col-md-4">
+					<input id="price" name="price" placeholder="Price" class="form-control input-md" required="" type="text" value="{{ .Price }}">
+				<span class="help-block">Price in Cents</span>
+				</div>
+			</div>
+
+			<!-- Text input-->
+			<div class="form-group">
+				<label class="col-md-4 control-label" for="count">In stock</label>
+				<div class="col-md-4">
+					<input id="count" name="count" placeholder="In stock" class="form-control input-md" type="text" value="{{ .Count }}">
+				<span class="help-block"># items in stock</span>
+				</div>
+			</div>
+			</fieldset>
+
+			<input type="hidden" id="_method" name="_method" value="PUT"></input>
+			<input type="submit" value="Update"></input>
+		</form>
+		<form class="form-horizontal" action="/products/{{ .Id }}" method="POST">
+			<input type="hidden" id="_method" name="_method" value="DELETE"></input>
+			<input type="submit" value="Delete"></input>
+		</form>
+	</div>
+</div>
 {{ end }}
