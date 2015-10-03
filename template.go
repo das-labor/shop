@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -13,6 +14,8 @@ import (
 var TemplateCache *template.Template
 
 func RenderTemplate(w http.ResponseWriter, tmpl string, title string, member Member, local interface{}) {
+	fmt.Println("Render '" + tmpl + "' for " + member.Name)
+
 	master := TemplateCache.Lookup("master")
 	global := struct {
 		Config Configuration

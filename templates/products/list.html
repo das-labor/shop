@@ -66,14 +66,28 @@
 				</tr>
 			</thead>
 			<tbody>
-		{{range . }}
+			{{range . }}
 			<tr>
 				<td><a href="/products/{{ .Id }}">{{ .Name }}</a></td>
 				<td>{{ .Slug }}</td>
 				<td>{{ .Description }}</td>
 				<td>{{ .Price }}</td>
 				<td>{{ .Count }}</td>
-		{{ end }}
+				<td>
+					<form class="form-horizontal" action="/cart" method="POST">
+						<!-- Text input-->
+						<div class="form-group">
+							<label class="col-md-4 control-label" for="count">Count</label>
+							<div class="col-md-4">
+								<input id="count" name="count" placeholder="Count" class="form-control input-md" required="" type="text" value="1">
+							</div>
+						</div>
+
+						<input type="hidden" id="id" name="id" value="{{ .Id }}"></input>
+						<input type="submit" value="Buy"></input>
+					</form>
+				</td>
+				{{ end }}
 			</tbody>
 		</table>
 	</div>

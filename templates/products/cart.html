@@ -1,0 +1,29 @@
+{{ define "cart" }}
+<div class="container">
+	<div class="row">
+		<h1>Cart</h1>
+<div class="row">
+		<table>
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Slug</th>
+					<th>Description</th>
+					<th>Price</th>
+					<th>Count</th>
+				</tr>
+			</thead>
+			<tbody>
+			{{range . }}
+			<tr>
+				<td><a href="/products/{{ .Product.Id }}">{{ .Product.Name }}</a></td>
+				<td>{{ .Product.Slug }}</td>
+				<td>{{ .Product.Description }}</td>
+				<td>{{ .Product.Price }}</td>
+				<td>{{ .Amount }}</td>
+			{{ end }}
+			</tbody>
+		</table>
+	</div>
+</div>
+{{ end }}

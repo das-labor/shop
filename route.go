@@ -51,7 +51,7 @@ func InitializeRoutes() error {
 	http.HandleFunc("/orders/new", notImplHandler)
 	http.HandleFunc("/orders/my", notImplHandler)
 
-	http.HandleFunc("/carts/my", notImplHandler)
+	http.HandleFunc("/cart", HandleCart)
 
 	http.HandleFunc("/members/", HandleMember)
 	http.HandleFunc("/members/login", HandleLogin)

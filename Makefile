@@ -1,5 +1,5 @@
 GO=go
-SOURCES=main.go template.go member.go product.go database.go session.go route.go
+SOURCES=main.go template.go member.go product.go database.go session.go route.go cart.go
 
 .PHONY: run
 
