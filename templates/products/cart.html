@@ -21,6 +21,22 @@
 				<td>{{ .Product.Description }}</td>
 				<td>{{ .Product.Price }}</td>
 				<td>{{ .Amount }}</td>
+				<td>
+					<form class="form-horizontal" action="/cart/{{ .Product.Id }}" method="POST">
+						<!-- Text input-->
+						<div class="form-group">
+						<input type="hidden" id="_method" name="_method" value="PUT"></input>
+						<input type="hidden" id="count" name="count" value="{{ .NextAmount }}"></input>
+						<input type="submit" value="+1"></input>
+					</form>
+					<form class="form-horizontal" action="/cart/{{ .Product.Id }}" method="POST">
+						<!-- Text input-->
+						<div class="form-group">
+						<input type="hidden" id="_method" name="_method" value="PUT"></input>
+						<input type="hidden" id="count" name="count" value="{{ .PrevAmount }}"></input>
+						<input type="submit" value="-1"></input>
+					</form>
+				</td>
 			{{ end }}
 			</tbody>
 		</table>
