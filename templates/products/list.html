@@ -38,7 +38,7 @@
 			</tbody>
 		</table>
 	</div>
-	{{ if .Member | isGuest }} {{ else }}
+	{{ if .Member | isAdmin }}
 	<div class="row">
 		<form class="form-horizontal" action="{{ prefix }}/products/" method="POST">
 		<fieldset>

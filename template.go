@@ -65,6 +65,7 @@ func RenderTemplate(w http.ResponseWriter, tmpl string, title string, member Mem
 func InitializeTemplates() error {
 	funcs := template.FuncMap{
 		"isGuest":     IsGuest,
+		"isAdmin":     IsAdmin,
 		"formatDate":  FormatDate,
 		"formatMoney": FormatMoney,
 		"prefix":      GlobalPrefix,
@@ -108,6 +109,10 @@ func InitializeTemplates() error {
 
 func IsGuest(member Member) bool {
 	return member.Id == 0
+}
+
+func IsAdmin(member Member) bool {
+	return member.Group == "admin"
 }
 
 func FormatDate(unix int64) string {
