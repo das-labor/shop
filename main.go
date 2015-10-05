@@ -12,6 +12,7 @@ type Configuration struct {
 	Location     string // Base Url
 	Listen       string // URL to listen on
 	CookieDomain string
+	CookieSecure bool
 	Salt         string // Salt used for password hashing
 	Templates    string // Path to the template dir
 	Database     string // Path to the SQLite database

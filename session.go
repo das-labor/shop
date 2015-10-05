@@ -95,7 +95,7 @@ func NewCookie(name string, value string, exp time.Time) http.Cookie {
 		Path:    GlobalConfig.Location + "/",
 		Domain:  GlobalConfig.CookieDomain,
 		Expires: exp,
-		Secure:  true,
+		Secure:  GlobalConfig.CookieSecure,
 	}
 }
 
