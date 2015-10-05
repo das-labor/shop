@@ -10,6 +10,7 @@
 					<th>Warenkorb</th>
 					<th>Summe</th>
 					<th>Status</th>
+					<th>Verwendungszweck</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -33,9 +34,17 @@
 						Unbekannt
 					{{ end }}
 				</td>
+				<td>{{ .Order.Uuid }}</td>
+			</tr>
 			{{ end }}
 			</tbody>
 		</table>
+			<p>Bitte &Uuml;berweise den Betrag mit angegebenen Verwendungszweck an:</p>
+		<pre>LABOR e.V.
+IBAN: DE72 4305 0001 0033 4191 77
+BIC: WELADED1BOC
+Sparkasse Bochum
+( Konto 334 191 77 / BLZ 430 500 01 )</pre>
 	</div>
 </div>
 {{ end }}
