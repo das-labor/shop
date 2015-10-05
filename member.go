@@ -70,8 +70,6 @@ func FetchMember(id int64, database *sql.DB) (Member, error) {
 		return Member{}, err
 	}
 
-	defer rows.Close()
-
 	if !rows.Next() {
 		return Member{}, errors.New("No such member")
 	}
@@ -117,18 +115,19 @@ func HandleMember(w http.ResponseWriter, r *http.Request) {
 		}
 
 		DatabaseMutex.Lock()
-		defer DatabaseMutex.Unlock()
 
 		var rows *sql.Rows
 		rows, err = Database.Query("SELECT * FROM members WHERE name = ?", name)
 
 		if err != nil {
+			DatabaseMutex.Unlock()
 			http.Error(w, "Failed create member: "+err.Error(), 500)
 			return
 		}
 
 		exists := rows.Next()
 		rows.Close()
+		DatabaseMutex.Unlock()
 
 		if exists {
 			http.Error(w, "Failed create member: exists already", 400)
@@ -161,15 +160,20 @@ func HandleMember(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		DatabaseMutex.Lock()
 		mem2, err := NewMember(name, email, passwd, "customer", Database)
 
 		if err != nil {
+			DatabaseMutex.Unlock()
 			http.Error(w, "Failed create member: "+err.Error(), 500)
 			return
 		}
 
 		sess := FetchOrCreateSession(w, r, Database)
 		err = LoginSession(sess.Id, mem2.Id, Database)
+
+		DatabaseMutex.Unlock()
+
 		if err != nil {
 			http.Error(w, "Failed to associate sessions to member: "+err.Error(), 500)
 			return
@@ -179,51 +183,55 @@ func HandleMember(w http.ResponseWriter, r *http.Request) {
 	} else if r.Method == "GET" {
 		memId := r.URL.Path[9:]
 
-		DatabaseMutex.Lock()
-		defer DatabaseMutex.Unlock()
-
 		if memId == "" {
-
-			if mem.Group == "admin" {
-
-				rows, err := Database.Query("SELECT * FROM members")
-
-				if err != nil {
-					http.Error(w, "Failed to read members from database: "+err.Error(), 500)
-				} else {
-					defer rows.Close()
-
-					mems := make([]Member, 0)
-
-					for rows.Next() {
-						mems = append(mems, MemberFromRow(rows))
-					}
-
-					RenderTemplate(w, "members/list", "All members", mem, mems)
-				}
-			} else {
+			if mem.Group != "admin" {
 				http.Error(w, "Unsufficient permissions", 403)
+				return
 			}
+
+			DatabaseMutex.Lock()
+			rows, err := Database.Query("SELECT * FROM members")
+
+			if err != nil {
+				DatabaseMutex.Unlock()
+				http.Error(w, "Failed to read members from database: "+err.Error(), 500)
+				return
+			}
+
+			mems := make([]Member, 0)
+
+			for rows.Next() {
+				mems = append(mems, MemberFromRow(rows))
+			}
+			rows.Close()
+			DatabaseMutex.Unlock()
+
+			RenderTemplate(w, "members/list", "All members", mem, mems)
 		} else {
 			if memId != fmt.Sprintf("%d", mem.Id) && mem.Group != "admin" {
 				http.Error(w, "Unsufficient permissions", 403)
 				return
 			}
 
+			DatabaseMutex.Lock()
 			rows, err := Database.Query("SELECT * FROM members WHERE id = ?", memId)
 
 			if err != nil {
+				DatabaseMutex.Unlock()
 				http.Error(w, "Failed to read member from database: "+err.Error(), 500)
-			} else {
-				defer rows.Close()
-
-				if !rows.Next() {
-					http.Error(w, "No such member", 404)
-				} else {
-					mem2 := MemberFromRow(rows)
-					RenderTemplate(w, "members/single", mem.Name, mem, mem2)
-				}
+				return
 			}
+
+			if !rows.Next() {
+				rows.Close()
+				DatabaseMutex.Unlock()
+				http.Error(w, "No such member", 404)
+			}
+
+			mem2 := MemberFromRow(rows)
+			rows.Close()
+			DatabaseMutex.Unlock()
+			RenderTemplate(w, "members/single", mem.Name, mem, mem2)
 		}
 	}
 }
@@ -268,12 +276,12 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		hashed := pbkdf2.Key([]byte(passwd), []byte(GlobalConfig.Salt), 8192, 32, sha256.New)
 
 		DatabaseMutex.Lock()
-		defer DatabaseMutex.Unlock()
 
 		var rows *sql.Rows
 		rows, err = Database.Query("SELECT id FROM members WHERE name = ? AND passwd = ?", name, hex.EncodeToString(hashed))
 
 		if err != nil {
+			DatabaseMutex.Unlock()
 			RenderTemplate(w, "pages/login", "", mem, "Invalid username or password.3")
 			return
 		}
@@ -281,6 +289,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		exists := rows.Next()
 
 		if !exists {
+			DatabaseMutex.Unlock()
 			RenderTemplate(w, "pages/login", "", mem, "Invalid username or password.4")
 			return
 		}
@@ -290,16 +299,19 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		rows.Close()
 
 		if err != nil {
+			DatabaseMutex.Unlock()
 			RenderTemplate(w, "pages/login", "", mem, "Invalid username or password.5")
 			return
 		}
 
 		err = LoginSession(sess.Id, memid, Database)
 		if err != nil {
+			DatabaseMutex.Unlock()
 			RenderTemplate(w, "pages/login", "", mem, "Invalid username or password.6")
 			return
 		}
 
+		DatabaseMutex.Unlock()
 		RenderTemplate(w, "members/success", "", mem, "")
 	} else {
 		RenderTemplate(w, "pages/login", "", mem, "Invalid username or password. (GET)")
