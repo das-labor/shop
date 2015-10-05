@@ -9,11 +9,12 @@ import (
 )
 
 type Configuration struct {
-	Location  string // Base Url
-	Listen    string // URL to listen on
-	Salt      string // Salt used for password hashing
-	Templates string // Path to the template dir
-	Database  string // Path to the SQLite database
+	Location     string // Base Url
+	Listen       string // URL to listen on
+	CookieDomain string
+	Salt         string // Salt used for password hashing
+	Templates    string // Path to the template dir
+	Database     string // Path to the SQLite database
 }
 
 const Version string = "0.1"

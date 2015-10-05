@@ -19,7 +19,7 @@
 				<td>
 					<ul>
 						{{ range .Cart }}
-						<li>{{ .Amount }} <a href="/products/{{ .Product.Id }}">{{ .Product.Name }}</a></li>
+						<li>{{ .Amount }} <a href="{{ prefix }}/products/{{ .Product.Id }}">{{ .Product.Name }}</a></li>
 						{{ end }}
 					</ul>
 				</td>

@@ -14,7 +14,7 @@
 			<tbody>
 			{{range .Cart }}
 			<tr>
-				<td><a href="/products/{{ .Product.Id }}">{{ .Product.Name }}</a></td>
+				<td><a href="{{ prefix }}/products/{{ .Product.Id }}">{{ .Product.Name }}</a></td>
 				<td>{{ .Amount }}</td>
 				<td>{{ .Product.Price | formatMoney }}</td>
 			</tr>
@@ -27,7 +27,7 @@
 						<td><b>Summe: {{ .Sum | formatMoney }}</b></td>
 				</tr>
 		</table>
-			<form class="form-horizontal" action="/orders/new" method="POST">
+		<form class="form-horizontal" action="{{ prefix }}/orders/new" method="POST">
 		 		<button type="submit" class="btn btn-default">Kaufen</button>
 			</form>
 	</div>

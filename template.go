@@ -67,6 +67,7 @@ func InitializeTemplates() error {
 		"isGuest":     IsGuest,
 		"formatDate":  FormatDate,
 		"formatMoney": FormatMoney,
+		"prefix":      GlobalPrefix,
 	}
 
 	TemplateCache = template.New("all").Funcs(funcs)
@@ -115,4 +116,8 @@ func FormatDate(unix int64) string {
 
 func FormatMoney(cents uint64) string {
 	return fmt.Sprintf("%0.2f", float64(cents)/100.0)
+}
+
+func GlobalPrefix() string {
+	return GlobalConfig.Location
 }

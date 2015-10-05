@@ -15,13 +15,13 @@
 			<tbody>
 			{{range .Products }}
 			<tr>
-				<td><a href="/products/{{ .Id }}">{{ .Name }}</a></td>
+				<td><a href="{{ prefix }}/products/{{ .Id }}">{{ .Name }}</a></td>
 				<td>{{ .Slug }}</td>
 				<td>{{ .Description }}</td>
 				<td>{{ .Price | formatMoney }} EUR</td>
 				<td>{{ .Count }}</td>
 				<td>
-					<form class="form-horizontal" action="/cart/" method="POST">
+					<form class="form-horizontal" action="{{ prefix }}/cart/" method="POST">
 						<!-- Text input-->
 						<div class="form-group">
 							<label class="col-md-4 control-label" for="count">Menge</label>
@@ -40,7 +40,7 @@
 	</div>
 	{{ if .Member | isGuest }} {{ else }}
 	<div class="row">
-		<form class="form-horizontal" action="/products/" method="POST">
+		<form class="form-horizontal" action="{{ prefix }}/products/" method="POST">
 		<fieldset>
 			<!-- Form Name -->
 			<legend>New Product</legend>

@@ -5,7 +5,7 @@
 		<h2>{{ .Product.Slug }}</h2>
 		<p>{{ .Product.Description }}</p>
 		<p><b>{{ .Product.Price | formatMoney }} EUR</b> ({{ .Product.Count }} verf&uuml;gbar)</p>
-		<form class="form-horizontal" action="/cart/" method="POST">
+		<form class="form-horizontal" action="{{ prefix }}/cart/" method="POST">
 			<!-- Text input-->
 			<div class="form-group">
 				<label class="col-md-1 control-label" for="count">Menge</label>
@@ -20,7 +20,7 @@
 	</div>
 	{{ if .Member | isGuest }} {{ else }}
 	<div class="row">
-		<form class="form-horizontal" action="/products/{{ .Product.Id }}" method="POST">
+		<form class="form-horizontal" action="{{ prefix }}/products/{{ .Product.Id }}" method="POST">
 		<fieldset>
 			<!-- Form Name -->
 			<legend>New Product</legend>
@@ -73,7 +73,7 @@
 			<input type="hidden" id="_method" name="_method" value="PUT"></input>
 			<input type="submit" value="Update"></input>
 		</form>
-		<form class="form-horizontal" action="/products/{{ .Product.Id }}" method="POST">
+		<form class="form-horizontal" action="{{ prefix }}/products/{{ .Product.Id }}" method="POST">
 			<input type="hidden" id="_method" name="_method" value="DELETE"></input>
 			<input type="submit" value="Delete"></input>
 		</form>

@@ -3,7 +3,7 @@
 	<div class="row">
 		<h1>Login</h1>
 		<p>{{ . }}</p>
-		<form class="form-horizontal" action="/members/login" method="POST">
+		<form class="form-horizontal" action="{{ prefix }}/members/login" method="POST">
 		<fieldset>
 
 			<!-- Form Name -->
@@ -28,7 +28,7 @@
 
 		</fieldset>
 		</form>
-		<p>Kein Account? <a href="/pages/register">Hier</a> kannst du dich registrieren.</p>
+		<p>Kein Account? <a href="{{ prefix }}/pages/register">Hier</a> kannst du dich registrieren.</p>
 	</div>
 </div>
 {{ end }}
