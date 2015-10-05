@@ -1,7 +1,25 @@
 {{ define "index" }}
 <div class="container">
 	<div class="row">
-	<h1>Labor Shop</h1>
+		<h1>Labortage Ticketshop</h1>
+
+		<div class="col-md-4">
+			<h2>Regul&auml;res Ticket</h2>
+			<p><b>15 EUR</b></p>
+			<p><a role="button" href="{{ prefix }}/products/1" class="btn btn-default">Zum Artikel »</a></p>
+		</div>
+
+		<div class="col-md-4">
+			<h2>Supporterticket</h2>
+			<p><b>30 EUR</b></p>
+			<p><a role="button" href="{{ prefix }}/products/2" class="btn btn-default">Zum Artikel »</a></p>
+		</div>
+
+		<div class="col-md-4">
+			<h2>Borg 16</h2>
+			<p><b>25 EUR</b></p>
+			<p><a role="button" href="{{ prefix }}/products/3" class="btn btn-default">Zum Artikel »</a></p>
+		</div>
 	</div>
 </div>
 {{ end }}
