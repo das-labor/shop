@@ -1,0 +1,8 @@
+{
+	"location": "",
+	"cookieDomain":"127.0.0.1",
+	"listen": "127.0.0.1:8080",
+	"salt": "seems legit...",
+	"templates": "templates",
+	"database": "database.db"
+}
