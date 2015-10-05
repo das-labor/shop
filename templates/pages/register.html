@@ -2,14 +2,38 @@
 <div class="container">
 	<div class="row">
 		<h1>Neuen Account erstellen</h1>
-		<form action="{{ prefix }}/members/" method="POST">
-			Name:
-			<input type="text" name="name" id="name" value="">
-			eMail:
-			<input type="email" name="email" id="email" value="">
-			Passwort
-			<input type="password" name="passwd" id="passwd" value="">
-			<input type="submit" value="Registrieren">
+		<form class="form-horizontal">
+			<fieldset>
+
+				<!-- Form Name -->
+				<legend>Login</legend>
+
+				<!-- Text input-->
+				<div class="form-group">
+					<label class="col-md-4 control-label" for="name">Login</label>
+					<div class="col-md-4">
+					<input id="name" name="name" placeholder="Login" class="form-control input-md" required="" type="text">
+					</div>
+				</div>
+
+				<!-- Text input-->
+				<div class="form-group">
+					<label class="col-md-4 control-label" for="email">eMail</label>
+					<div class="col-md-4">
+					<input id="email" name="email" placeholder="eMail" class="form-control input-md" required="" type="text">
+					</div>
+				</div>
+
+				<!-- Password input-->
+				<div class="form-group">
+					<label class="col-md-4 control-label" for="passwd">Passwort</label>
+					<div class="col-md-4">
+						<input id="passwd" name="passwd" placeholder="Passwort" class="form-control input-md" required="" type="password">
+						<span class="help-block">Mindestens 8 Zeichen</span>
+					</div>
+				</div>
+
+			</fieldset>
 		</form>
 	</div>
 </div>
