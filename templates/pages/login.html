@@ -1,12 +1,34 @@
 {{ define "pages/login" }}
-<h1>Login</h1>
-<p>{{ . }}</p>
-<form action="/members/login" method="POST">
-	Name:
-	<input type="text" name="name" id="name" value="">
-	Passwort
-	<input type="password" name="passwd" id="passwd" value="">
-	<input type="submit" value="Login">
-</form>
-Kein Account? <a href="/pages/register">Hier</a> kannst du dich registrieren.
+<div class="container">
+	<div class="row">
+		<h1>Login</h1>
+		<p>{{ . }}</p>
+		<form class="form-horizontal" action="/members/login" method="POST">
+		<fieldset>
+
+			<!-- Form Name -->
+			<legend>Login</legend>
+
+			<!-- Text input-->
+			<div class="form-group">
+				<label class="col-md-4 control-label" for="name">Name</label>
+				<div class="col-md-4">
+					<input id="name" name="name" placeholder="Name" class="form-control input-md" required="" type="text">
+				</div>
+			</div>
+
+			<!-- Password input-->
+			<div class="form-group">
+				<label class="col-md-4 control-label" for="passwd">Passwort</label>
+				<div class="col-md-4">
+					<input id="passwd" name="passwd" placeholder="Passwort" class="form-control input-md" required="" type="password">
+				</div>
+			</div>
+		  <button type="submit" class="btn btn-default">Login</button>
+
+		</fieldset>
+		</form>
+		<p>Kein Account? <a href="/pages/register">Hier</a> kannst du dich registrieren.</p>
+	</div>
+</div>
 {{ end }}

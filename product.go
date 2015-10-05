@@ -176,11 +176,27 @@ func GetProducts(mem Member, w http.ResponseWriter, r *http.Request) {
 	rows.Close()
 	DatabaseMutex.Unlock()
 
-	RenderTemplate(w, "products/list", "All products", mem, prods)
+	meta := struct {
+		Products []Product
+		Member   Member
+	}{
+		prods,
+		mem,
+	}
+
+	RenderTemplate(w, "products/list", "All products", mem, meta)
 }
 
 func GetProduct(prod Product, mem Member, w http.ResponseWriter, r *http.Request) {
-	RenderTemplate(w, "products/single", "", mem, prod)
+	meta := struct {
+		Product Product
+		Member  Member
+	}{
+		prod,
+		mem,
+	}
+
+	RenderTemplate(w, "products/single", "", mem, meta)
 }
 
 func PutProduct(prod Product, mem Member, w http.ResponseWriter, r *http.Request) {

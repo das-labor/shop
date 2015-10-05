@@ -1,0 +1,35 @@
+{{ define "orders/new" }}
+<div class="container">
+	<div class="row">
+		<h1>Neue Bestellung</h1>
+		<div class="row">
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Menge</th>
+					<th>Preis</th>
+				</tr>
+			</thead>
+			<tbody>
+			{{range .Cart }}
+			<tr>
+				<td><a href="/products/{{ .Product.Id }}">{{ .Product.Name }}</a></td>
+				<td>{{ .Amount }}</td>
+				<td>{{ .Product.Price | formatMoney }}</td>
+			</tr>
+			{{ end }}
+			</tbody>
+			<tfoot>
+				<tr>
+					<td/>
+					<td/>
+						<td><b>Summe: {{ .Sum | formatMoney }}</b></td>
+				</tr>
+		</table>
+			<form class="form-horizontal" action="/orders/new" method="POST">
+		 		<button type="submit" class="btn btn-default">Kaufen</button>
+			</form>
+	</div>
+</div>
+{{ end }}

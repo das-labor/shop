@@ -229,8 +229,10 @@ func HandleMember(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleLogin(w http.ResponseWriter, r *http.Request) {
+	DatabaseMutex.Lock()
 	sess := FetchOrCreateSession(w, r, Database)
 	mem, err := FetchMember(sess.Member, Database)
+	DatabaseMutex.Unlock()
 
 	if err != nil {
 		http.Error(w, "Failed to fetch member: "+err.Error(), 500)

@@ -96,12 +96,14 @@ func AddToCart(form url.Values, member Member, session Session, w http.ResponseW
 
 	err = tx.Commit()
 	if err != nil {
+		DatabaseMutex.Unlock()
 		http.Error(w, "Failed add to cart: "+err.Error(), 500)
 		return
 	}
 
 	ar, err := res.RowsAffected()
 	if err != nil {
+		DatabaseMutex.Unlock()
 		http.Error(w, "Failed add to cart: "+err.Error(), 500)
 		return
 	}

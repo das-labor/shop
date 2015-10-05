@@ -28,4 +28,6 @@ func InitializeSchema() {
 	Database.Exec("CREATE TABLE members (id INTEGER PRIMARY KEY, name STRING UNIQUE, email STRING, passwd STRING, grp STRING)")
 	Database.Exec("CREATE TABLE sessions (id STRING PRIMARY KEY, member INTEGER, lastseen INTEGER)")
 	Database.Exec("CREATE TABLE carts (product INTEGER, session STRING, count INTEGER)")
+	Database.Exec("CREATE TABLE orders (id INTEGER PRIMARY KEY, date INTEGER, member INTEGER, status STRING, uuid STRING)")
+	Database.Exec("CREATE TABLE order_items (orderid INTEGER, product INTEGER, count UNSIGNED INTEGER)")
 }

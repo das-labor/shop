@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 var TemplateCache *template.Template
@@ -63,7 +64,9 @@ func RenderTemplate(w http.ResponseWriter, tmpl string, title string, member Mem
 
 func InitializeTemplates() error {
 	funcs := template.FuncMap{
-	//"products": GetProducts,
+		"isGuest":     IsGuest,
+		"formatDate":  FormatDate,
+		"formatMoney": FormatMoney,
 	}
 
 	TemplateCache = template.New("all").Funcs(funcs)
@@ -100,4 +103,16 @@ func InitializeTemplates() error {
 	}
 
 	return nil
+}
+
+func IsGuest(member Member) bool {
+	return member.Id == 0
+}
+
+func FormatDate(unix int64) string {
+	return time.Unix(unix, 0).Format(time.UnixDate)
+}
+
+func FormatMoney(cents uint64) string {
+	return fmt.Sprintf("%0.2f", float64(cents)/100.0)
 }

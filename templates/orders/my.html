@@ -1,0 +1,41 @@
+{{ define "orders/my" }}
+<div class="container">
+	<div class="row">
+		<h1>Meine Bestellungen</h1>
+		<div class="row">
+		<table class="table">
+			<thead>
+				<tr>
+					<th>Bestellt am</th>
+					<th>Warenkorb</th>
+					<th>Summe</th>
+					<th>Status</th>
+				</tr>
+			</thead>
+			<tbody>
+			{{range . }}
+			<tr>
+				<td>{{ .Order.Date | formatDate }}</a></td>
+				<td>
+					<ul>
+						{{ range .Cart }}
+						<li>{{ .Amount }} <a href="/products/{{ .Product.Id }}">{{ .Product.Name }}</a></li>
+						{{ end }}
+					</ul>
+				</td>
+				<td>{{ .Sum | formatMoney }} EUR</td>
+				<td>
+					{{ if eq .Order.Status "new" }}
+						Warte auf Zahlung
+					{{ else if eq .Order.Status "paid" }}
+						Bezahlt
+					{{ else }}
+						Unbekannt
+					{{ end }}
+				</td>
+			{{ end }}
+			</tbody>
+		</table>
+	</div>
+</div>
+{{ end }}

@@ -1,0 +1,14 @@
+{{ define "orders/success" }}
+<div class="container">
+	<div class="row">
+		<h1>Bestellung gespeichert</h1>
+		<p>Bitte &Uuml;berweise <b>{{ .Sum | formatMoney }} EUR</b> mit dem Verwendungszweck <b>{{ .Uuid }}</b> an:</p>
+		<pre>LABOR e.V.
+IBAN: DE72 4305 0001 0033 4191 77
+BIC: WELADED1BOC
+Sparkasse Bochum
+( Konto 334 191 77 / BLZ 430 500 01 )</pre>
+		<a href="/orders/my">Alle Bestellungen</a>
+	</div>
+	</div>
+{{ end }}
