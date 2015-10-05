@@ -283,6 +283,12 @@ func PostNewProduct(mem Member, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, "Failed to update product: "+err.Error(), 500)
+		return
+	}
+
 	prod, err := ProductFromForm(r.PostForm)
 
 	if err != nil {
