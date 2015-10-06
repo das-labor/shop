@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"golang.org/x/crypto/pbkdf2"
+	"log"
 	"net/http"
 	"regexp"
 )
@@ -261,7 +262,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		names, ok = r.PostForm["name"]
 		if !ok || len(names) != 1 {
 			http.Error(w, "Invalid username or password", 500)
-			log.Error("Login: can't parse name field")
+			log.Print("Login: can't parse name field")
 			return
 		}
 
@@ -270,7 +271,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		passwds, ok = r.PostForm["passwd"]
 		if !ok || len(passwds) != 1 {
 			http.Error(w, "Invalid username or password", 500)
-			log.Error("Login: can't parse passwd field")
+			log.Print("Login: can't parse passwd field")
 			return
 		}
 
@@ -285,7 +286,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			DatabaseMutex.Unlock()
 			http.Error(w, "Invalid username or password", 500)
-			log.Error("Login: SELECT failed (" + err.Error() + ")")
+			log.Print("Login: SELECT failed (" + err.Error() + ")")
 			return
 		}
 
@@ -294,7 +295,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		if !exists {
 			DatabaseMutex.Unlock()
 			http.Error(w, "Invalid username or password", 500)
-			log.Error("Login: SELECT did not return anything")
+			log.Print("Login: SELECT did not return anything")
 			return
 		}
 
@@ -305,7 +306,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			DatabaseMutex.Unlock()
 			http.Error(w, "Invalid username or password", 500)
-			log.Error("Login: can't parse SELECT")
+			log.Print("Login: can't parse SELECT")
 			return
 		}
 
@@ -313,7 +314,7 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			DatabaseMutex.Unlock()
 			http.Error(w, "Invalid username or password", 500)
-			log.Error("Login: can't login session (" + err.Error() + ")")
+			log.Print("Login: can't login session (" + err.Error() + ")")
 			return
 		}
 
