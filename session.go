@@ -70,8 +70,6 @@ func RefreshSession(id string, database *sql.DB) (Session, error) {
 		return Session{}, err
 	}
 
-	defer rows.Close()
-
 	if !rows.Next() {
 		return Session{}, errors.New("No such session")
 	}

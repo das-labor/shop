@@ -65,11 +65,14 @@ func AddToCart(form url.Values, member Member, session Session, w http.ResponseW
 	var avail_count uint64
 	err = rows.Scan(&avail_count)
 	if err != nil {
+		rows.Close()
 		tx.Rollback()
 		DatabaseMutex.Unlock()
 		http.Error(w, "Failed add to cart: "+err.Error(), 500)
 		return
 	}
+
+	rows.Close()
 
 	if avail_count < count {
 		tx.Rollback()
@@ -149,7 +152,6 @@ func GetCart(member Member, session Session, w http.ResponseWriter, r *http.Requ
 		}
 	}
 
-	rows.Close()
 	DatabaseMutex.Unlock()
 
 	RenderTemplate(w, "cart", "", member, cart)
@@ -201,11 +203,14 @@ func PutCartItem(prodId int64, member Member, session Session, w http.ResponseWr
 	var cur_count uint64
 	err = rows.Scan(&cur_count)
 	if err != nil {
+		rows.Close()
 		tx.Rollback()
 		DatabaseMutex.Unlock()
 		http.Error(w, "Failed add to cart: "+err.Error(), 500)
 		return
 	}
+
+	rows.Close()
 
 	rows, err = tx.Query("SELECT count FROM products WHERE id = ?", prodId)
 	if err != nil {
@@ -225,11 +230,14 @@ func PutCartItem(prodId int64, member Member, session Session, w http.ResponseWr
 	var avail_count uint64
 	err = rows.Scan(&avail_count)
 	if err != nil {
+		rows.Close()
 		tx.Rollback()
 		DatabaseMutex.Unlock()
 		http.Error(w, "Failed add to cart: "+err.Error(), 500)
 		return
 	}
+
+	rows.Close()
 
 	if avail_count+cur_count < count {
 		tx.Rollback()
@@ -238,7 +246,7 @@ func PutCartItem(prodId int64, member Member, session Session, w http.ResponseWr
 		return
 	}
 
-	res, err := tx.Exec("UPDATE products SET count = count + ? WHERE id = ?", cur_count, prodId)
+	_, err = tx.Exec("UPDATE products SET count = count + ? WHERE id = ?", cur_count, prodId)
 	if err != nil {
 		tx.Rollback()
 		DatabaseMutex.Unlock()
@@ -254,7 +262,7 @@ func PutCartItem(prodId int64, member Member, session Session, w http.ResponseWr
 		return
 	}
 
-	res, err = tx.Exec("UPDATE products SET count = count - ? WHERE id = ?", count, prodId)
+	_, err = tx.Exec("UPDATE products SET count = count - ? WHERE id = ?", count, prodId)
 	if err != nil {
 		tx.Rollback()
 		DatabaseMutex.Unlock()
@@ -264,27 +272,12 @@ func PutCartItem(prodId int64, member Member, session Session, w http.ResponseWr
 
 	err = tx.Commit()
 	if err != nil {
-		http.Error(w, "Failed add to cart: "+err.Error(), 500)
-		return
-	}
-
-	ar, err := res.RowsAffected()
-	if err != nil {
+		DatabaseMutex.Unlock()
 		http.Error(w, "Failed add to cart: "+err.Error(), 500)
 		return
 	}
 
 	DatabaseMutex.Unlock()
-
-	if err != nil {
-		http.Error(w, "Failed add to cart: "+err.Error(), 500)
-		return
-	}
-
-	if ar != 1 {
-		http.Error(w, "Failed add to cart: "+err.Error(), 500)
-		return
-	}
 
 	http.Redirect(w, r, "/cart", 301)
 }
@@ -317,13 +310,16 @@ func DeleteCartItem(prodId int64, member Member, session Session, w http.Respons
 	var cur_count uint
 	err = rows.Scan(&cur_count)
 	if err != nil {
+		rows.Close()
 		tx.Rollback()
 		DatabaseMutex.Unlock()
 		http.Error(w, "Failed add to cart: "+err.Error(), 500)
 		return
 	}
 
-	res, err := tx.Exec("UPDATE products SET count = count + ? WHERE id = ?", cur_count, prodId)
+	rows.Close()
+
+	_, err = tx.Exec("UPDATE products SET count = count + ? WHERE id = ?", cur_count, prodId)
 	if err != nil {
 		tx.Rollback()
 		DatabaseMutex.Unlock()
@@ -331,7 +327,7 @@ func DeleteCartItem(prodId int64, member Member, session Session, w http.Respons
 		return
 	}
 
-	res, err = tx.Exec("DELETE FROM carts WHERE product = ? AND session = ?", prodId, session.Id)
+	_, err = tx.Exec("DELETE FROM carts WHERE product = ? AND session = ?", prodId, session.Id)
 	if err != nil {
 		tx.Rollback()
 		DatabaseMutex.Unlock()
@@ -341,28 +337,12 @@ func DeleteCartItem(prodId int64, member Member, session Session, w http.Respons
 
 	err = tx.Commit()
 	if err != nil {
-		http.Error(w, "Failed add to cart: "+err.Error(), 500)
-		return
-	}
-
-	ar, err := res.RowsAffected()
-	if err != nil {
+		DatabaseMutex.Unlock()
 		http.Error(w, "Failed add to cart: "+err.Error(), 500)
 		return
 	}
 
 	DatabaseMutex.Unlock()
-
-	if err != nil {
-		http.Error(w, "Failed add to cart: "+err.Error(), 500)
-		return
-	}
-
-	if ar != 1 {
-		http.Error(w, "Failed add to cart: "+err.Error(), 500)
-		return
-	}
-
 	http.Redirect(w, r, "/cart", 301)
 }
 

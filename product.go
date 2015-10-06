@@ -27,8 +27,6 @@ func FetchProduct(id int64, database *sql.DB) (Product, error) {
 		return Product{}, err
 	}
 
-	defer rows.Close()
-
 	if !rows.Next() {
 		return Product{}, errors.New("No such product")
 	}
@@ -173,7 +171,6 @@ func GetProducts(mem Member, w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	rows.Close()
 	DatabaseMutex.Unlock()
 
 	meta := struct {

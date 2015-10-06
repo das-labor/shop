@@ -66,8 +66,6 @@ func FetchOrder(id int64, database *sql.DB) (Order, error) {
 		return Order{}, err
 	}
 
-	defer rows.Close()
-
 	if !rows.Next() {
 		return Order{}, errors.New("No such order")
 	}
@@ -109,6 +107,7 @@ func FetchReceipt(id int64, database *sql.DB) (Receipt, error) {
 		itm := CartItem{Product: prod, Amount: amount, NextAmount: amount + 1, PrevAmount: amount - 1}
 
 		if err != nil {
+			rows.Close()
 			return Receipt{}, err
 		}
 
@@ -116,6 +115,7 @@ func FetchReceipt(id int64, database *sql.DB) (Receipt, error) {
 		cart = append(cart, itm)
 	}
 
+	rows.Close()
 	return Receipt{ord, cart, sum}, nil
 }
 
@@ -166,6 +166,7 @@ func PostNewOrder(session Session, member Member, w http.ResponseWriter, r *http
 		itm := CartItem{Product: prod, Amount: amount, NextAmount: amount + 1, PrevAmount: amount - 1}
 
 		if err != nil {
+			rows.Close()
 			tx.Rollback()
 			DatabaseMutex.Unlock()
 			http.Error(w, "Failed to order: "+err.Error(), 500)
@@ -174,8 +175,10 @@ func PostNewOrder(session Session, member Member, w http.ResponseWriter, r *http
 
 		sum += prod.Price * itm.Amount
 		cart = append(cart, itm)
+	}
 
-		_, err = tx.Exec("INSERT INTO order_items VALUES ( ?, ?, ? )", ord.Id, prod.Id, itm.Amount)
+	for _, c := range cart {
+		_, err = tx.Exec("INSERT INTO order_items VALUES ( ?, ?, ? )", ord.Id, c.Product.Id, c.Amount)
 		if err != nil {
 			tx.Rollback()
 			DatabaseMutex.Unlock()
@@ -198,8 +201,6 @@ func PostNewOrder(session Session, member Member, w http.ResponseWriter, r *http
 		http.Error(w, "Failed to order: "+err.Error(), 500)
 		return
 	}
-
-	rows.Close()
 
 	err = tx.Commit()
 	if err != nil {
@@ -251,7 +252,6 @@ func GetNewOrder(session Session, member Member, w http.ResponseWriter, r *http.
 		}
 	}
 
-	rows.Close()
 	DatabaseMutex.Unlock()
 
 	meta := struct {
@@ -324,6 +324,7 @@ func GetMyOrders(w http.ResponseWriter, r *http.Request) {
 
 		err := rows.Scan(&id)
 		if err != nil {
+			rows.Close()
 			DatabaseMutex.Unlock()
 			http.Error(w, err.Error(), 500)
 			return
@@ -332,6 +333,7 @@ func GetMyOrders(w http.ResponseWriter, r *http.Request) {
 		ord, err := FetchReceipt(id, Database)
 
 		if err != nil {
+			rows.Close()
 			DatabaseMutex.Unlock()
 			http.Error(w, err.Error(), 500)
 			return
@@ -340,7 +342,6 @@ func GetMyOrders(w http.ResponseWriter, r *http.Request) {
 		orders = append(orders, ord)
 	}
 
-	rows.Close()
 	DatabaseMutex.Unlock()
 
 	RenderTemplate(w, "orders/my", "", mem, orders)

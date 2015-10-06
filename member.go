@@ -204,7 +204,6 @@ func HandleMember(w http.ResponseWriter, r *http.Request) {
 			for rows.Next() {
 				mems = append(mems, MemberFromRow(rows))
 			}
-			rows.Close()
 			DatabaseMutex.Unlock()
 
 			RenderTemplate(w, "members/list", "Alle Accounts", mem, mems)
@@ -224,7 +223,6 @@ func HandleMember(w http.ResponseWriter, r *http.Request) {
 			}
 
 			if !rows.Next() {
-				rows.Close()
 				DatabaseMutex.Unlock()
 				http.Error(w, "No such member", 404)
 			}
