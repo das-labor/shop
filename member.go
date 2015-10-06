@@ -260,7 +260,8 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 		names, ok = r.PostForm["name"]
 		if !ok || len(names) != 1 {
-			RenderTemplate(w, "pages/login", "", mem, "Invalid username or password.1")
+			http.Error(w, "Invalid username or password", 500)
+			log.Error("Login: can't parse name field")
 			return
 		}
 
@@ -268,7 +269,8 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 		passwds, ok = r.PostForm["passwd"]
 		if !ok || len(passwds) != 1 {
-			RenderTemplate(w, "pages/login", "", mem, "Invalid username or password.2")
+			http.Error(w, "Invalid username or password", 500)
+			log.Error("Login: can't parse passwd field")
 			return
 		}
 
@@ -282,7 +284,8 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			DatabaseMutex.Unlock()
-			RenderTemplate(w, "pages/login", "", mem, "Invalid username or password.3")
+			http.Error(w, "Invalid username or password", 500)
+			log.Error("Login: SELECT failed (" + err.Error() + ")")
 			return
 		}
 
@@ -290,7 +293,8 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 		if !exists {
 			DatabaseMutex.Unlock()
-			RenderTemplate(w, "pages/login", "", mem, "Invalid username or password.4")
+			http.Error(w, "Invalid username or password", 500)
+			log.Error("Login: SELECT did not return anything")
 			return
 		}
 
@@ -300,20 +304,22 @@ func HandleLogin(w http.ResponseWriter, r *http.Request) {
 
 		if err != nil {
 			DatabaseMutex.Unlock()
-			RenderTemplate(w, "pages/login", "", mem, "Invalid username or password.5")
+			http.Error(w, "Invalid username or password", 500)
+			log.Error("Login: can't parse SELECT")
 			return
 		}
 
 		err = LoginSession(sess.Id, memid, Database)
 		if err != nil {
 			DatabaseMutex.Unlock()
-			RenderTemplate(w, "pages/login", "", mem, "Invalid username or password.6")
+			http.Error(w, "Invalid username or password", 500)
+			log.Error("Login: can't login session (" + err.Error() + ")")
 			return
 		}
 
 		DatabaseMutex.Unlock()
 		RenderTemplate(w, "members/success", "", mem, "")
 	} else {
-		RenderTemplate(w, "pages/login", "", mem, "Invalid username or password. (GET)")
+		http.Error(w, "Method not supported", 405)
 	}
 }
