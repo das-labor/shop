@@ -3,48 +3,49 @@
 	<div class="row">
 		<h1>Meine Bestellungen</h1>
 		<div class="row">
-		<table class="table">
-			<thead>
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Bestellt am</th>
+						<th>Warenkorb</th>
+						<th>Summe</th>
+						<th>Status</th>
+						<th>Verwendungszweck</th>
+					</tr>
+				</thead>
+				<tbody>
+				{{range . }}
 				<tr>
-					<th>Bestellt am</th>
-					<th>Warenkorb</th>
-					<th>Summe</th>
-					<th>Status</th>
-					<th>Verwendungszweck</th>
-				</tr>
-			</thead>
-			<tbody>
-			{{range . }}
-			<tr>
-				<td>{{ .Order.Date | formatDate }}</a></td>
-				<td>
-					<ul>
-						{{ range .Cart }}
-						<li>{{ .Amount }} <a href="{{ prefix }}/products/{{ .Product.Id }}">{{ .Product.Name }}</a></li>
+					<td>{{ .Order.Date | formatDate }}</a></td>
+					<td>
+						<ul>
+							{{ range .Cart }}
+							<li>{{ .Amount }} <a href="{{ prefix }}/products/{{ .Product.Id }}">{{ .Product.Name }}</a></li>
+							{{ end }}
+						</ul>
+					</td>
+					<td>{{ .Sum | formatMoney }} EUR</td>
+					<td>
+						{{ if eq .Order.Status "new" }}
+							Warte auf Zahlung
+						{{ else if eq .Order.Status "paid" }}
+							Bezahlt
+						{{ else }}
+							Unbekannt
 						{{ end }}
-					</ul>
-				</td>
-				<td>{{ .Sum | formatMoney }} EUR</td>
-				<td>
-					{{ if eq .Order.Status "new" }}
-						Warte auf Zahlung
-					{{ else if eq .Order.Status "paid" }}
-						Bezahlt
-					{{ else }}
-						Unbekannt
-					{{ end }}
-				</td>
-				<td>{{ .Order.Uuid }}</td>
-			</tr>
-			{{ end }}
-			</tbody>
-		</table>
+					</td>
+					<td>{{ .Order.Uuid }}</td>
+				</tr>
+				{{ end }}
+				</tbody>
+			</table>
 			<p>Bitte &Uuml;berweise den Betrag mit angegebenen Verwendungszweck an:</p>
-		<pre>LABOR e.V.
+			<pre>LABOR e.V.
 IBAN: DE72 4305 0001 0033 4191 77
 BIC: WELADED1BOC
 Sparkasse Bochum
 ( Konto 334 191 77 / BLZ 430 500 01 )</pre>
+		</div>
 	</div>
 </div>
 {{ end }}
