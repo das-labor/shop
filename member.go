@@ -206,7 +206,7 @@ func HandleMember(w http.ResponseWriter, r *http.Request) {
 			rows.Close()
 			DatabaseMutex.Unlock()
 
-			RenderTemplate(w, "members/list", "All members", mem, mems)
+			RenderTemplate(w, "members/list", "Alle Accounts", mem, mems)
 		} else {
 			if memId != fmt.Sprintf("%d", mem.Id) && mem.Group != "admin" {
 				http.Error(w, "Unsufficient permissions", 403)

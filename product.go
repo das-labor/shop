@@ -184,7 +184,7 @@ func GetProducts(mem Member, w http.ResponseWriter, r *http.Request) {
 		mem,
 	}
 
-	RenderTemplate(w, "products/list", "All products", mem, meta)
+	RenderTemplate(w, "products/list", "", mem, meta)
 }
 
 func GetProduct(prod Product, mem Member, w http.ResponseWriter, r *http.Request) {

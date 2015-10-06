@@ -343,5 +343,5 @@ func GetMyOrders(w http.ResponseWriter, r *http.Request) {
 	rows.Close()
 	DatabaseMutex.Unlock()
 
-	RenderTemplate(w, "orders/my", "My Orders", mem, orders)
+	RenderTemplate(w, "orders/my", "", mem, orders)
 }
