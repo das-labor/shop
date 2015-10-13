@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"github.com/pborman/uuid"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -283,6 +285,216 @@ func HandleOrdersNew(w http.ResponseWriter, r *http.Request) {
 		PostNewOrder(sess, mem, w, r)
 	} else if r.Method == "GET" {
 		GetNewOrder(sess, mem, w, r)
+	} else {
+		http.Error(w, "Method not supported", 405)
+	}
+}
+
+type NamedReceipt struct {
+	Receipt Receipt
+	Member  Member
+}
+
+func GetOrders(mem Member, w http.ResponseWriter, r *http.Request) {
+	DatabaseMutex.Lock()
+	rows, err := Database.Query("SELECT id,member FROM orders")
+
+	if err != nil {
+		DatabaseMutex.Unlock()
+		http.Error(w, err.Error(), 500)
+		return
+	}
+
+	rcpts := make([]NamedReceipt, 0)
+	for rows.Next() {
+		var id, memId int64
+
+		err := rows.Scan(&id, &memId)
+		if err != nil {
+			rows.Close()
+			DatabaseMutex.Unlock()
+			http.Error(w, err.Error(), 500)
+			return
+		}
+
+		rcpt, err := FetchReceipt(id, Database)
+
+		if err != nil {
+			rows.Close()
+			DatabaseMutex.Unlock()
+			http.Error(w, err.Error(), 500)
+			return
+		}
+
+		rec_mem, err := FetchMember(memId, Database)
+
+		if err != nil {
+			rows.Close()
+			DatabaseMutex.Unlock()
+			http.Error(w, err.Error(), 500)
+			return
+		}
+
+		rcpts = append(rcpts, NamedReceipt{Receipt: rcpt, Member: rec_mem})
+	}
+
+	DatabaseMutex.Unlock()
+	RenderTemplate(w, "orders/list", "", mem, rcpts)
+}
+
+func PutOrder(rcpt Receipt, w http.ResponseWriter, r *http.Request) {
+	stats, ok := r.PostForm["status"]
+	if !ok || len(stats) != 1 || (stats[0] != "new" && stats[0] != "paid") {
+		http.Error(w, "Missing or invalid status", 500)
+		return
+	}
+
+	DatabaseMutex.Lock()
+	_, err := Database.Exec("UPDATE orders SET status = ? WHERE id = ?", stats[0], rcpt.Order.Id)
+	DatabaseMutex.Unlock()
+
+	if err != nil {
+		http.Error(w, "Failed to update order: "+err.Error(), 500)
+	} else {
+		http.Redirect(w, r, "/orders/", 301)
+	}
+}
+
+func DeleteOrder(rcpt Receipt, w http.ResponseWriter, r *http.Request) {
+	DatabaseMutex.Lock()
+	tx, err := Database.Begin()
+	if err != nil {
+		DatabaseMutex.Unlock()
+		http.Error(w, "Failed to delete order: "+err.Error(), 500)
+		return
+	}
+
+	for _, itm := range rcpt.Cart {
+		rows, err := tx.Query("SELECT count FROM products WHERE id = ?", itm.Product.Id)
+		if err != nil {
+			tx.Rollback()
+			DatabaseMutex.Unlock()
+			http.Error(w, "Failed to delete order: "+err.Error(), 500)
+			return
+		}
+
+		if !rows.Next() {
+			tx.Rollback()
+			DatabaseMutex.Unlock()
+			http.Error(w, "Failed to delete order: ordered non-existing product", 500)
+			return
+		}
+
+		var count uint64
+		err = rows.Scan(&count)
+		if err != nil {
+			tx.Rollback()
+			DatabaseMutex.Unlock()
+			http.Error(w, "Failed to delete order: "+err.Error(), 500)
+			return
+		}
+
+		rows.Close()
+		count += itm.Amount
+		_, err = tx.Exec("UPDATE products SET count = ? WHERE id = ?", count, itm.Product.Id)
+		if err != nil {
+			tx.Rollback()
+			DatabaseMutex.Unlock()
+			http.Error(w, "Failed to delete order: "+err.Error(), 500)
+			return
+		}
+	}
+
+	_, err = tx.Exec("DELETE FROM order_items WHERE orderid = ?", rcpt.Order.Id)
+	if err != nil {
+		tx.Rollback()
+		DatabaseMutex.Unlock()
+		http.Error(w, "Failed to delete order: "+err.Error(), 500)
+		return
+	}
+
+	_, err = tx.Exec("DELETE FROM orders WHERE id = ?", rcpt.Order.Id)
+	if err != nil {
+		tx.Rollback()
+		DatabaseMutex.Unlock()
+		http.Error(w, "Failed to delete order: "+err.Error(), 500)
+		return
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		DatabaseMutex.Unlock()
+		http.Error(w, "Failed delete order: "+err.Error(), 500)
+		return
+	}
+
+	DatabaseMutex.Unlock()
+	http.Redirect(w, r, "/orders/", 301)
+}
+
+func HandleOrder(w http.ResponseWriter, r *http.Request) {
+	DatabaseMutex.Lock()
+	sess := FetchOrCreateSession(w, r, Database)
+	mem, err := FetchMember(sess.Member, Database)
+	DatabaseMutex.Unlock()
+
+	if err != nil {
+		http.Error(w, "Failed to fetch member: "+err.Error(), 500)
+		return
+	}
+
+	if mem.Group != "admin" {
+		http.Error(w, "Insufficient permissions", 403)
+		return
+	}
+
+	fmt.Println("HandleOrder() Path = '" + r.URL.Path + "', Method = " + r.Method)
+
+	if r.URL.Path == "/orders" || r.URL.Path == "/orders/" {
+		if r.Method == "GET" {
+			GetOrders(mem, w, r)
+		} else {
+			http.Error(w, "Method not supported", 405)
+		}
+	} else if r.Method == "POST" {
+		err := r.ParseForm()
+
+		if err != nil {
+			http.Error(w, "Failed to parse form data: "+err.Error(), 500)
+			return
+		}
+
+		var meth string
+		meths, ok := r.PostForm["_method"]
+		if !ok || len(meths) != 1 || len(meths[0]) == 0 {
+			meth = "POST"
+		} else {
+			meth = meths[0]
+		}
+
+		ordId, err := strconv.ParseInt(strings.TrimPrefix(r.URL.Path, "/orders/"), 10, 64)
+
+		if err != nil {
+			http.Error(w, "Order not found: "+err.Error(), 404)
+			return
+		}
+
+		DatabaseMutex.Lock()
+		rcpt, err := FetchReceipt(ordId, Database)
+		DatabaseMutex.Unlock()
+
+		if err != nil {
+			http.Error(w, "Order not found: "+err.Error(), 404)
+			return
+		}
+
+		if meth == "PUT" {
+			PutOrder(rcpt, w, r)
+		} else if meth == "DELETE" {
+			DeleteOrder(rcpt, w, r)
+		} else {
+			http.Error(w, "Not found", 404)
+		}
 	} else {
 		http.Error(w, "Method not supported", 405)
 	}

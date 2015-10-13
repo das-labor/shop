@@ -1,0 +1,62 @@
+{{ define "orders/list" }}
+<div class="container">
+	<div class="row">
+		<h1>Alle Bestellungen</h1>
+		<div class="row">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>Von</th>
+						<th>Bestellt am</th>
+						<th>Warenkorb</th>
+						<th>Summe</th>
+						<th>Status</th>
+						<th>Verwendungszweck</th>
+						<th>Aktion</th>
+					</tr>
+				</thead>
+				<tbody>
+				{{range . }}
+				<tr>
+					<td><a href="{{ prefix }}/members/{{ .Member.Id }}">{{ .Member.Name }}</a></td>
+					<td>{{ .Receipt.Order.Date | formatDate }}</a></td>
+					<td>
+						<ul>
+							{{ range .Receipt.Cart }}
+							<li>{{ .Amount }} <a href="{{ prefix }}/products/{{ .Product.Id }}">{{ .Product.Name }}</a></li>
+							{{ end }}
+						</ul>
+					</td>
+					<td>{{ .Receipt.Sum | formatMoney }} EUR</td>
+					<td>
+						{{ if eq .Receipt.Order.Status "new" }}
+						<form class="form-inline" action="{{ prefix }}/orders/{{ .Receipt.Order.Id }}" method="POST">
+							Warte auf Zahlung &nbsp;<button type="submit" class="btn btn-success btn-xs">Bezahlt</button>
+							<input type="hidden" id="_method" name="_method" value="PUT"></input>
+							<input type="hidden" id="status" name="status" value="paid"></input>
+						</form>
+						{{ else if eq .Receipt.Order.Status "paid" }}
+							<form class="form-inline" action="{{ prefix }}/orders/{{ .Receipt.Order.Id }}" method="POST">
+								Bezahlt &nbsp;<button type="submit" class="btn btn-warning btn-xs">Zur&uuml;ck</button>
+							<input type="hidden" id="_method" name="_method" value="PUT"></input>
+							<input type="hidden" id="status" name="status" value="new"></input>
+						</form>
+						{{ else }}
+							Unbekannt
+						{{ end }}
+					</td>
+					<td>{{ .Receipt.Order.Uuid }}</td>
+					<td>
+						<form class="form-inline" action="{{ prefix }}/orders/{{ .Receipt.Order.Id }}" method="POST">
+							<button type="submit" class="btn btn-danger btn-xs">Delete</button>
+							<input type="hidden" id="_method" name="_method" value="DELETE"></input>
+						</form>
+					</td>
+				</tr>
+				{{ end }}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+{{ end }}
