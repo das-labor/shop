@@ -1,12 +1,38 @@
-{{ define "list_members" }}
-<table>
-	<tbody>
-{{range . }}
-	<tr>
-		<td>{{ .Name }}</td>
-		<td>{{ .EMail }}</td>
-		<td>{{ .Passwd }}</td>
-{{ end }}
-	</tbody>
-</table>
+{{ define "members/list" }}
+<div class="container">
+	<div class="row">
+		<h1>Alle Benutzer</h1>
+		<div class="row">
+			<table class="table">
+				<thead>
+					<tr>
+						<th>ID</th>
+						<th>Name</th>
+						<th>eMail</th>
+						<th>Passwort</th>
+						<th>Gruppe</th>
+					</tr>
+				</thead>
+				<tbody>
+				{{range . }}
+				{{ if eq 0 .Id }}
+				<tr>
+					<td>0</td>
+					<td colspan="4">Gast</td>
+				</tr>
+				{{ else }}
+				<tr>
+					<td>{{ .Id }}</td>
+					<td><a href="{{ prefix }}/members/{{ .Id }}">{{ .Name }}</a></td>
+					<td><a href="mailto:{{ .EMail }}">{{ .EMail }}</a></td>
+					<td><code>{{ .Passwd }}</code></td>
+					<td>{{ .Group }}</td>
+				</tr>
+				{{ end }}
+				{{ end }}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
 {{ end }}

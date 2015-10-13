@@ -1,5 +1,89 @@
-{{ define "single_member" }}
-<h1>{{ .Name }}</h1>
-eMail: {{ .EMail }}<br/>
-Passwort: {{ .Passwd }}<br/>
+{{ define "members/single" }}
+<div class="container">
+	<div class="row">
+		<h1>Profil von {{ .Name }} <small>{{ .EMail }}</small></h1>
+	</div>
+
+	<div class="row">
+		<form class="form-horizontal" action="{{ prefix }}/members/{{ .Id }}" method="POST">
+			<fieldset>
+				<legend>Profil</legend>
+
+				<!-- Text input-->
+				<div class="form-group">
+					<label class="col-md-4 control-label" for="name">Name</label>
+					<div class="col-md-4">
+						<input id="name" name="name" placeholder="Name" class="form-control input-md" required="" value="{{ .Name }}" type="text">
+						<span class="help-block">Loginname</span>
+					</div>
+				</div>
+
+				<!-- Text input-->
+				<div class="form-group">
+					<label class="col-md-4 control-label" for="email">eMail</label>
+					<div class="col-md-4">
+						<input id="email" name="email" placeholder="eMail" class="form-control input-md" required="" value="{{ .EMail }}" type="text">
+						<span class="help-block">eMail Adresse</span>
+					</div>
+				</div>
+
+				<!-- Multiple Radios -->
+				<div class="form-group">
+					<label class="col-md-4 control-label" for="group">Gruppe</label>
+					<div class="col-md-4">
+					<div class="radio">
+						<label for="group-0">
+							{{ if . | isAdmin }}
+							<input name="group" id="group-0" value="admin" checked="checked" type="radio">
+							{{ else }}
+							<input name="group" id="group-0" value="admin" type="radio">
+							{{ end }}
+							Administrator
+						</label>
+					</div>
+					<div class="radio">
+						<label for="group-1">
+							{{ if . | isAdmin }}
+							<input name="group" id="group-1" value="customer" type="radio">
+							{{ else }}
+							<input name="group" id="group-1" value="customer" checked="checked" type="radio">
+							{{ end }}
+							Kunde
+						</label>
+					</div>
+					</div>
+				</div>
+			</fieldset>
+			<div class="col-md-4"></div>
+			<div class="col-md-2">
+				<input type="hidden" id="_method" name="_method" value="PUT"></input>
+				<button type="submit" class="btn btn-default">Submit</button>
+			</div>
+		</form>
+
+		<div class="col-md-2">
+			<form action="{{ prefix }}/members/{{ .Id }}" method="POST">
+				<input type="hidden" id="_method" name="_method" value="DELETE"></input>
+				<button type="submit" class="btn btn-danger">Delete</button>
+			</form>
+		</div>
+	</div>
+
+	<div class="row">
+		<form class="form-horizontal" action="{{ prefix }}/members/{{ .Id }}/passwd" method="POST">
+			<fieldset>
+				<legend>Passwort</legend>
+				<div class="form-group">
+					<label class="col-md-4 control-label" for="passwd">Passwort</label>
+					<div class="col-md-4">
+						<input id="passwd" name="passwd" placeholder="Neues Passwort" class="form-control input-md" required="" type="text">
+					</div>
+					<div class="col-md-2">
+						<button type="submit" class="btn btn-default">Reset Passwort</button>
+					</div>
+				</div>
+			</fieldset>
+		</form>
+	</div>
+</div>
 {{ end }}
